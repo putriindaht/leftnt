@@ -40,7 +40,9 @@ Returns HTTP `200 OK` and `Content-Type: application/json`:
 This checks whether the HTTP process responds, not the health of external
 services. Unknown routes return `404`; unsupported methods on `/health`
 return `405`. HEAD is also accepted by Go's GET route matching.
-There are no HTTP endpoints for gameplay yet.
+Gameplay endpoints are `POST /games`, `GET /games/{id}`, and
+`POST /games/{id}/moves`. See the [API reference](../docs/api.md) for bodies
+and responses. Start the [Next.js client](../client/README.md) to play in a browser.
 
 Interactive input uses `golang.org/x/term` to enable raw terminal mode. The
 previous terminal settings are restored when the game returns, including on

@@ -6,12 +6,15 @@ import (
 	"time"
 
 	httpdelivery "github.com/putriindaht/leftnt/server/internal/delivery/http"
+	"github.com/putriindaht/leftnt/server/internal/storage/memory"
 	"github.com/putriindaht/leftnt/server/internal/usecase"
 )
 
 func main() {
 	healthService := usecase.NewHealthService()
-	router := httpdelivery.NewRouter(healthService)
+	gameRepository := memory.NewGameRepository()
+	gameService := usecase.NewGameService(gameRepository)
+	router := httpdelivery.NewRouter(healthService, gameService)
 
 	server := &http.Server{
 		Addr:              ":8080",

@@ -7,3 +7,12 @@
 # Local build and test output
 /server/bin/
 /server/coverage.out
+
+# Next.js client dependencies and build output
+/client/node_modules/
+/client/.next/
+/client/out/
+/client/*.tsbuildinfo
+/client/next-env.d.ts
+/client/.env*
+!/client/.env.example

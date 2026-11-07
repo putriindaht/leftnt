@@ -11,19 +11,9 @@ import (
 )
 
 func main() {
-	maze, err := domain.GenerateMaze(15, 11)
+	game, err := domain.NewGame(15, 11)
 	if err != nil {
-		fmt.Println("Failed to generate maze:", err)
-		return
-	}
-
-	player := domain.Player{
-		Position: domain.Position{X: 1, Y: 1},
-	}
-
-	goal, err := maze.RandomGoal(player.Position)
-	if err != nil {
-		fmt.Println("Failed to select goal:", err)
+		fmt.Println("Failed to create game:", err)
 		return
 	}
 
@@ -49,7 +39,7 @@ func main() {
 	fmt.Fprintln(output, "Use arrow keys or W/A/S/D to move. No Enter needed.")
 	fmt.Fprintln(output, "Press Q or Ctrl+C to quit.")
 
-	drawMaze(output, maze, player, goal)
+	drawMaze(output, game.Maze, game.Player, game.Goal)
 
 	for {
 		direction, err := readCommand(reader)
@@ -67,13 +57,18 @@ func main() {
 			continue
 		}
 
-		if !player.Move(direction, maze) {
+		moved, err := game.Move(direction)
+		if err != nil {
+			fmt.Fprintln(output, "Failed to move player:", err)
+			continue
+		}
+		if !moved {
 			fmt.Fprintln(output, "You can't move there!")
 		}
 
-		drawMaze(output, maze, player, goal)
+		drawMaze(output, game.Maze, game.Player, game.Goal)
 
-		if player.Position == goal {
+		if game.Status == domain.GameStatusWon {
 			fmt.Fprintln(output, "Goal reached! Your sense of direction survived.")
 			return
 		}

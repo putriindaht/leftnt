@@ -16,6 +16,10 @@ destination and intervening wall, and backtracks when no candidate remains.
 Outer borders stay closed; every generated path cell is connected to the start.
 Generation advances two cells at a time; the player moves one cell at a time.
 
+The API and terminal both use `Game.Move` to apply these rules. Only successful
+moves increment the move count. A game is `playing` until reaching the goal,
+then becomes `won` and rejects further moves.
+
 ## Movement
 
 | Command | Direction | Coordinate change |
