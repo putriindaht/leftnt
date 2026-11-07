@@ -1,0 +1,9 @@
+# Local roadmap and learning notes
+/.local/
+
+# Local machine files
+.DS_Store
+
+# Local build and test output
+/server/bin/
+/server/coverage.out
