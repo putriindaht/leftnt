@@ -5,9 +5,11 @@
 LEFTN'T is a cooperative maze game concept: an Explorer moves with limited
 visibility while a Navigator sees the map and gives directions.
 
-The current implementation is a single-player game playable in the terminal
-or a Next.js browser client backed by a Go HTTP API. Multiplayer, fog of war,
-and the countdown timer are not implemented yet.
+The current implementation is a single-player game playable in the terminal,
+a Next.js browser client backed by a Go HTTP API, or an Ebitengine pixel-art
+renderer. The Ebitengine solo mode has animated walking, a lost friend to find,
+and lantern pickups that temporarily expand visibility. The terminal and Next.js
+client show the full maze. Multiplayer and a round time limit are planned.
 
 ## Current features
 
@@ -35,6 +37,17 @@ go run ./cmd/play
 Use the arrow keys or `W/A/S/D` to move immediately, without Enter.
 Press `Q` or Ctrl+C to quit.
 Reach `G` to win. `P` is the player, `.` is a path, and `#` is a wall.
+
+## Play with Ebitengine
+
+From the `server` directory:
+
+```sh
+go run ./cmd/ebitengine
+```
+
+See the [Ebitengine reference](server/cmd/ebitengine/README.md) for controls,
+visibility rules, and the macOS OpenGL alternative.
 
 ## Play in the browser
 
@@ -97,6 +110,7 @@ leftnt/
 ├── server/
 │   ├── cmd/api/            # HTTP server entry point
 │   ├── cmd/play/           # Terminal game entry point
+│   ├── cmd/ebitengine/     # Pixel-art game entry point
 │   ├── internal/
 │   │   ├── delivery/http/  # HTTP routes and handlers
 │   │   ├── domain/         # Maze, player, goal rules, and tests

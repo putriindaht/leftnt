@@ -58,3 +58,40 @@ ends the game. Random outcomes may repeat across runs.
 | `#` | Wall |
 
 When the player reaches the goal, `P` takes display priority over `G`.
+
+## Ebitengine presentation
+
+The Ebitengine solo mode uses `SoloGame` to extend the shared collision and goal
+rules. The goal represents the explorer's lost friend, a boy in a red shirt.
+Visual movement
+interpolates between accepted grid positions over 12 ticks; the domain still
+stores integer positions. Arrow keys/WASD can be held for continuous movement.
+The player uses idle and alternating foot poses, currently front-facing.
+
+Before winning, only cells within a one-cell radius of the animated player
+are drawn. Collecting a lantern expands this to three cells for 20 seconds of
+game time, including time spent standing still. Another pickup refills that
+duration rather than adding to it. After expiry, the radius returns to one.
+Two lanterns are randomly spread across different sections of the route from
+the start to the friend. Each pickup is consumed once. `DefaultSoloConfig`
+controls the count, duration, and view radii; tiny mazes use available cells.
+
+Visible terrain is dim and cool without light, then brighter and warmer while
+a lantern is active. Characters, pickups, and UI retain their normal colors.
+Winning restores the map's full brightness.
+
+Walls also block sight, including corners. The friend and lanterns share
+terrain visibility, so neither is shown through fog or walls. Reaching the
+friend completes the final animated step, displays the characters together,
+reveals the map, and freezes the light timer. T swaps hedge and wood textures
+without changing maze geometry. This presentation does not connect to the HTTP API.
+
+The compact Ebitengine HUD below the maze separates the objective or win message,
+move/pickup counts, light timer, view radius, and controls onto their own lines. Restart
+with R or the on-screen button at any time; this generates a new game, resets
+moves, pickups, light duration, animation, queued input, visibility state, and feedback, and preserves
+the selected hedge/wood style. Blocked moves produce a random playful speech
+bubble near the player without changing position or move count. Bubbles stay
+inside the maze and appear above or below the player to keep the character clear.
+The same line is not selected twice
+in a row, and sustained pressure against a wall does not spam new messages.

@@ -1,6 +1,7 @@
 # LEFTN'T server
 
-This module provides two separate executables and shared maze domain code.
+This module provides terminal, HTTP, and Ebitengine executables with shared
+maze domain code.
 Run the commands below from this directory.
 
 ## Terminal game
@@ -16,6 +17,16 @@ and selects a reachable goal using the distance rule in the
 Use the arrow keys or `W/A/S/D` to move without pressing Enter. Both lowercase
 and uppercase letters work. Press `Q` or Ctrl+C to quit. Reaching the goal ends the program. Run it again to
 generate a new maze. Stop either executable with Ctrl+C.
+
+## Ebitengine game
+
+```sh
+go run ./cmd/ebitengine
+```
+
+The pixel-art version includes animated walking, hedge/wood wall selection,
+limited visibility, a lost friend to find, and timed lantern pickups. See the [Ebitengine reference](cmd/ebitengine/README.md)
+for controls and the macOS OpenGL alternative.
 
 ## HTTP server
 
