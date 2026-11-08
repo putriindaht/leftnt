@@ -1,0 +1,14 @@
+.git
+.local
+.env
+.env.*
+**/.DS_Store
+client/node_modules
+client/.next
+client/out
+client/.env*
+client/*.tsbuildinfo
+client/public/engine/game.wasm
+client/public/engine/wasm_exec.js
+server/bin
+server/coverage.out

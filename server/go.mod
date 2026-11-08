@@ -3,6 +3,7 @@ module github.com/putriindaht/leftnt/server
 go 1.27.3
 
 require (
+	github.com/coder/websocket v1.8.15
 	github.com/hajimehoshi/ebiten/v2 v2.10.6
 	golang.org/x/image v0.45.0
 	golang.org/x/term v0.47.0

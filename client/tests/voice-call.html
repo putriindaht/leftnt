@@ -1,0 +1,64 @@
+<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>LEFTN'T synthetic voice test</title>
+<style>body{font:16px/1.6 system-ui;background:#f2f6ff;color:#1c2d53;max-width:860px;margin:48px auto;padding:0 24px}button{font:inherit;background:#315ee8;color:white;border:0;border-radius:6px;padding:12px 24px;cursor:pointer}li{margin:9px 0}#result{font-weight:700}code{background:#dce5fa;padding:2px 5px}</style>
+<h1>LEFTN'T synthetic voice test</h1><p>Uses the production voice controller and real WebRTC audio connections. Audio comes from generated tones; no physical microphone is requested or recorded. Generated test tones use very low playback volume.</p><button id="run">Run synthetic call test</button><p id="result" role="status">Ready.</p><ol id="log"></ol>
+<script type="module">
+import {VoiceCall} from './voice-call.js';
+const run=document.querySelector('#run'),result=document.querySelector('#result'),log=document.querySelector('#log');
+function note(message){const li=document.createElement('li');li.textContent=message;log.append(li)}
+function assert(value,message){if(!value)throw new Error(message)}
+async function wait(test,message,ms=15000){const until=Date.now()+ms;while(!test()){if(Date.now()>until)throw new Error(message);await new Promise(resolve=>setTimeout(resolve,60));}}
+async function post(path){const response=await fetch('/api'+path,{method:'POST'});if(!response.ok)throw new Error('Room HTTP '+response.status);return response.json()}
+run.onclick=async()=>{
+ run.disabled=true;log.replaceChildren();result.textContent='Running…';
+ const context=new AudioContext();await context.resume();
+ const controllers=[],oscillators=[],states={},streams={},calls={},analysis={},sources={},players={};
+ function tone(name){
+  calls[name]=(calls[name]||0)+1;
+  const destination=context.createMediaStreamDestination(),osc=context.createOscillator(),gain=context.createGain();
+  osc.frequency.value=name==='a'?440:660;gain.gain.value=.08;osc.connect(gain).connect(destination);osc.start();oscillators.push(osc);
+  (streams[name]??=[]).push(destination.stream);return destination.stream;
+ }
+ function level(name){if(!analysis[name])return 0;const data=new Uint8Array(256);analysis[name].getByteTimeDomainData(data);return data.reduce((sum,x)=>sum+Math.abs(x-128),0)/data.length}
+ try{
+  const aSession=await post('/rooms'),bSession=await post('/rooms/'+aSession.code+'/join');
+  const endpoint=new URL('/api/rooms/'+aSession.code+'/voice',location.href);endpoint.protocol='ws:';
+  function controller(name,session,provider=async()=>tone(name)){
+   const call=new VoiceCall({endpoint:endpoint.href,token:session.token,getMedia:provider,onState:state=>{states[name]=state},onRemoteStream:stream=>{
+    sources[name]?.disconnect();delete sources[name];delete analysis[name];if(players[name]){players[name].pause();players[name].srcObject=null;players[name].remove();delete players[name];}
+    if(stream){const player=document.createElement('audio');player.volume=0.001;player.autoplay=true;player.srcObject=stream;document.body.append(player);players[name]=player;player.play().then(()=>note('Playback started for '+name)).catch(error=>note('Playback blocked for '+name+': '+error.name));const source=context.createMediaStreamSource(stream),analyser=context.createAnalyser(),silence=context.createGain();silence.gain.value=0;analyser.fftSize=256;source.connect(analyser).connect(silence).connect(context.destination);sources[name]=source;analysis[name]=analyser;}
+   }});controllers.push(call);return call;
+  }
+  const a=controller('a',aSession),b=controller('b',bSession);
+  assert(!calls.a&&!calls.b,'Creating controls must not capture audio');note('No media capture before Join voice.');
+  await a.join();await wait(()=>states.a?.status==='waiting','First player did not wait');
+  assert(!calls.b,'The other player must opt in independently');note('First player waits; partner audio is not started automatically.');
+  await b.join();await wait(()=>states.a?.status==='connected'&&states.b?.status==='connected','Peers did not connect');
+  await wait(()=>level('a')>1&&level('b')>1,'No decoded audio in both directions');note('Real WebRTC connected and decoded generated audio in both directions.');
+  a.toggleMute();assert(states.a.muted&&streams.a[0].getAudioTracks().every(track=>!track.enabled),'Mute did not disable audio tracks');
+  await wait(()=>level('b')<.3,'Muted audio was still audible',5000);note('Mute disabled the outgoing track and the partner received silence.');
+  a.toggleMute();await wait(()=>level('b')>1,'Unmute did not restore audio');note('Unmute restored received audio.');
+  b.leave();assert(streams.b.every(stream=>stream.getTracks().every(track=>track.readyState==='ended')),'Leaving did not stop capture');
+  await wait(()=>states.a.status==='waiting','Partner leave was not signaled');
+  await b.join();await wait(()=>states.a.status==='connected'&&states.b.status==='connected','Rejoining voice did not reconnect');
+  await wait(()=>level('a')>1&&level('b')>1,'No audio after rejoin');assert(calls.a===1&&calls.b===2,'Unexpected audio capture after peer rejoin');note('Leaving and rejoining negotiated a fresh call with two-way audio.');
+  a.leave();b.leave();assert([...streams.a,...streams.b].every(stream=>stream.getTracks().every(track=>track.readyState==='ended')),'Tracks remained active after leave');note('Leave call stopped every local media track.');
+  let resolveMedia;const pending=new Promise(resolve=>{resolveMedia=resolve});
+  const c=controller('cancel',aSession,()=>pending);const joining=c.join();c.leave();const late=tone('late');resolveMedia(late);await joining;
+  assert(late.getTracks().every(track=>track.readyState==='ended'),'Late permission result leaked a track');note('Cancel while permission is pending also stopped the late media track.');
+  const denied=controller('denied',aSession,async()=>{throw new DOMException('Denied','NotAllowedError')});await denied.join();
+  assert(states.denied.status==='error'&&!states.denied.microphoneActive&&states.denied.error.includes('permission denied'),'Permission rejection was not handled');note('Microphone permission rejection is handled without opening a call.');
+  const invalid=controller('invalid',{...aSession,token:'wrong'});await invalid.join();await wait(()=>states.invalid.status==='error','Invalid token was not rejected');
+  assert(streams.invalid.every(stream=>stream.getTracks().every(track=>track.readyState==='ended')),'Rejected signaling kept capture alive');note('Rejected signaling authentication stopped capture.');
+  result.textContent='PASS: two-way WebRTC audio, mute/unmute, rejoin, cancel, and media cleanup.';
+ }catch(error){
+  result.textContent='FAIL: '+error.message;note(error.stack||error.message);
+  note('Audio context: '+context.state+'; time '+context.currentTime.toFixed(2)+'; levels '+level('a').toFixed(3)+' / '+level('b').toFixed(3));
+  for(let index=0;index<controllers.length;index++){
+   const peer=controllers[index].peer;
+   if(peer){const stats=await peer.getStats();stats.forEach(row=>{if(['inbound-rtp','outbound-rtp','media-source'].includes(row.type))note(JSON.stringify({peer:index,type:row.type,kind:row.kind,packetsReceived:row.packetsReceived,bytesReceived:row.bytesReceived,bytesSent:row.bytesSent,audioLevel:row.audioLevel,totalAudioEnergy:row.totalAudioEnergy,totalSamplesDuration:row.totalSamplesDuration}))});}
+  }
+ }finally{
+  for(const controller of controllers)controller.dispose();for(const osc of oscillators)osc.stop();await context.close();run.disabled=false;
+ }
+};
+</script></html>

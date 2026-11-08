@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>LEFTN'T garden</title>
+  <style>
+    html,body{margin:0;width:100%;height:100%;background:#181a2a;color:#fff1d3;font-family:system-ui,sans-serif}
+    canvas{image-rendering:pixelated} #loading{position:fixed;inset:0;display:grid;place-content:center;text-align:center;padding:24px}
+    button{padding:10px 18px;background:#efc16d;color:#332718;border:0;font:inherit;cursor:pointer}
+  </style>
+</head>
+<body>
+  <div id="loading" role="status">Opening the garden…</div>
+  <script src="wasm_exec.js"></script>
+  <script type="module">
+    const loading = document.getElementById('loading');
+    try {
+      const go = new Go();
+      const parameters = new URLSearchParams(location.hash.slice(1));
+      const code = parameters.get('code');
+      const token = parameters.get('token');
+      if (code && token) {
+        if (!/^[A-Z2-7]{8}$/.test(code)) throw new Error('Invalid room code');
+        const endpoint = new URL(`/api/rooms/${code}/ws`, parameters.get('server') || location.origin);
+        if (!['http:', 'https:', 'ws:', 'wss:'].includes(endpoint.protocol)) throw new Error('Invalid game server');
+        endpoint.protocol = ['https:', 'wss:'].includes(endpoint.protocol) ? 'wss:' : 'ws:';
+        go.env.LEFTNT_WS_URL = endpoint.href;
+        go.env.LEFTNT_ROOM_TOKEN = token;
+      }
+      const response = await fetch('game.wasm');
+      if (!response.ok) throw new Error('Could not load game');
+      const result = await WebAssembly.instantiateStreaming(response, go.importObject);
+      loading.remove();
+      await go.run(result.instance);
+    } catch (error) {
+      console.error('Game loading failed', error);
+      loading.textContent = 'The game could not load. Reload and try again.';
+      if (!loading.isConnected) document.body.append(loading);
+      const retry = document.createElement('button');
+      retry.textContent = 'Reload game';
+      retry.onclick = () => location.reload();
+      loading.append(retry);
+    }
+  </script>
+</body>
+</html>

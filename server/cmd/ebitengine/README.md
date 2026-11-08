@@ -52,9 +52,11 @@ EBITENGINE_GRAPHICS_LIBRARY=opengl go run ./cmd/ebitengine
   Messages last about 3 seconds, with a 0.75-second cooldown. Holding against the
   same wall does not continuously replace the message.
 
-This renderer runs locally and does not connect to HTTP API sessions. It can be
-compiled for WebAssembly, but there is no tracked web launcher for this entry
-point yet. The separate Next.js client continues using the Go HTTP API.
+Solo mode runs locally. Multiplayer uses server-owned Explorer/Navigator rooms
+over WebSocket with filtered snapshots and the same pixel-art assets.
+See [multiplayer](../../../docs/multiplayer.md) for browser and desktop setup.
+The tracked `scripts/build-engine.sh` and Dockerfile build the browser launcher.
+The separate original Next.js game continues using the single-player HTTP API.
 
 ## Solo settings
 
@@ -66,6 +68,7 @@ route's available cells allow. A count of zero is supported.
 ## Code
 
 - `main.go`: keyboard input, rendering, and startup.
+- `multiplayer.go`: remote snapshots, role-specific controls, and room HUD.
 - `movement.go`: visual interpolation, animation frame selection, and visibility.
 - `sprites.go`: player poses, the red-shirted friend, and lantern pixels.
 - `tiles.go`: dirt, wood, and hedge textures.

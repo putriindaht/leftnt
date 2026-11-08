@@ -1,19 +1,27 @@
 @import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap");
 
 :root {
-  --paper: #f2f6ff;
-  --ink: #1c2d53;
-  --muted: #526181;
-  --line: #ccd5ec;
-  --accent: #315ee8;
-  --goal: #ffcc4d;
-  --path: #ffffff;
-  --wall: #243762;
-  --error: #b13836;
-  --frame: #dce5fa;
-  --accent-hover: #254ac4;
-  --control-hover: #e7edff;
-  --goal-ink: #382a10;
+  --paper: #f4eedf;
+  --ink: #3e3025;
+  --muted: #72604c;
+  --line: #c5b596;
+  --accent: #466335;
+  --on-accent: #fff8e7;
+  --goal: #efc16d;
+  --goal-ink: #4b351b;
+  --surface: #fffaf0;
+  --panel: #e6dfc9;
+  --path: #eddbb9;
+  --wall: #3c5431;
+  --player: #815839;
+  --error: #a13d2c;
+  --frame: #cdb58e;
+  --accent-hover: #334c27;
+  --control-hover: #e8eddb;
+  --control-border: #958365;
+  color-scheme: light;
+  accent-color: var(--accent);
+  scrollbar-color: var(--control-border) var(--paper);
 }
 * {
   box-sizing: border-box;
@@ -32,6 +40,10 @@ a {
 button {
   font: inherit;
   cursor: pointer;
+}
+input,
+textarea {
+  caret-color: var(--accent);
 }
 button:disabled {
   cursor: default;
@@ -102,7 +114,7 @@ h1 {
 .primary {
   border: 0;
   background: var(--accent);
-  color: white;
+  color: var(--on-accent);
   border-radius: 8px;
   padding: 13px 24px;
   font-weight: 600;
@@ -158,8 +170,8 @@ kbd {
   margin: 0;
 }
 .legend-player {
-  background: var(--accent);
-  color: white;
+  background: var(--player);
+  color: var(--on-accent);
 }
 .legend-goal {
   background: var(--goal);
@@ -210,8 +222,8 @@ kbd {
   background: var(--path);
 }
 .player {
-  background: var(--accent);
-  color: white;
+  background: var(--player);
+  color: var(--on-accent);
   box-shadow: inset 0 0 0 3px var(--path);
   border-radius: 7px;
 }
@@ -223,7 +235,7 @@ kbd {
 }
 .empty-board {
   aspect-ratio: 15/11;
-  background: var(--path);
+  background: var(--surface);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -254,8 +266,8 @@ kbd {
   width: 36px;
   height: 36px;
   border-radius: 7px;
-  background: var(--accent);
-  color: white;
+  background: var(--player);
+  color: var(--on-accent);
   font-weight: 700;
 }
 .empty-route span:last-child {
@@ -295,9 +307,9 @@ kbd {
   gap: 5px;
 }
 .direction {
-  border: 1px solid var(--line);
+  border: 1px solid var(--control-border);
   border-radius: 6px;
-  background: var(--path);
+  background: var(--surface);
   color: var(--ink);
   text-transform: capitalize;
   font-size: 12px;
@@ -406,4 +418,48 @@ footer {
   * {
     scroll-behavior: auto;
   }
+}
+
+.mode-nav { display: flex; gap: 24px; font-size: 14px; }
+.mode-nav a { font: inherit; letter-spacing: normal; font-weight: 600; }
+.mode-nav a[aria-current] { color: var(--accent); text-decoration: underline; text-underline-offset: 5px; }
+.coop-layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr); gap: 64px; padding: 56px 0; }
+.coop-layout.in-room { grid-template-columns: minmax(220px, .65fr) minmax(0, 1.4fr); gap: 36px; }
+.coop-intro > p { max-width: 40ch; color: var(--muted); }
+.join-room { margin-top: 42px; padding-top: 26px; border-top: 1px solid var(--line); }
+.join-room label { display: block; font-size: 14px; font-weight: 600; margin-bottom: 12px; }
+.join-room > div { display: flex; gap: 10px; }
+.join-room input { min-width: 0; width: 180px; padding: 12px; border: 1px solid var(--control-border); border-radius: 6px; background: var(--surface); color: var(--ink); font: inherit; font-size: 16px; text-transform: uppercase; }
+.join-room input::placeholder { text-transform: none; color: var(--muted); }
+.join-room input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.join-room button { white-space: nowrap; }
+.coop-explanation { align-self: center; padding: 38px; background: var(--panel); border-radius: 12px; }
+.coop-explanation h2 { font: 700 28px/1.25 Manrope,sans-serif; margin: 0 0 30px; text-wrap: balance; }
+.coop-explanation ol { padding-left: 20px; margin: 0; }
+.coop-explanation li { padding-left: 8px; margin-bottom: 22px; }
+.coop-explanation li:last-child { margin-bottom: 0; }
+.coop-explanation li span { display: block; color: var(--muted); font-size: 14px; margin-top: 4px; }
+.room-code { margin: 24px 0 18px; }
+.room-code span { display: block; color: var(--muted); font-size: 13px; }
+.room-code strong { font-size: 30px; letter-spacing: .12em; font-variant-numeric: tabular-nums; }
+.coop-intro .instructions { margin: 24px 0; }
+.coop-intro .instructions p + p { margin-top: 12px; }
+.coop-game { min-width: 0; }
+.voice-chat { margin: 24px 0; padding: 20px 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+.voice-chat h2 { font-size: 16px; margin: 0 0 8px; }
+.voice-status { font-size: 14px; color: var(--muted); margin: 0 0 6px; }
+.microphone-state { font-size: 13px; font-weight: 600; margin: 0 0 14px; }
+.voice-controls { display: flex; flex-wrap: wrap; gap: 10px; }
+.voice-button { padding: 10px 18px; min-height: 44px; border: 1px solid var(--control-border); border-radius: 6px; background: var(--surface); color: var(--ink); font-weight: 600; }
+.voice-button:hover:enabled { background: var(--control-hover); }
+.voice-button[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); }
+.voice-note { font-size: 12px; color: var(--muted); margin: 12px 0 0; }
+.coop-game iframe { width: 100%; aspect-ratio: 240 / 296; display: block; border: 0; background: #181a2a; }
+@media (max-width: 800px) {
+  .coop-layout, .coop-layout.in-room { grid-template-columns: 1fr; gap: 28px; padding: 32px 0; }
+  .coop-layout.in-room .coop-intro h1 { font-size: 26px; }
+  .coop-layout.in-room .coop-intro h1 br { display: none; }
+  .coop-explanation { padding: 28px; }
+  .room-code { margin: 16px 0; }
+  .mode-nav { gap: 14px; font-size: 12px; }
 }

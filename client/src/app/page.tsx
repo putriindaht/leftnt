@@ -118,7 +118,10 @@ export default function Home() {
         <a href="/" aria-label="LEFTN’T home">
           LEFTN’T
         </a>
-        <span>One maze. Questionable directions.</span>
+        <nav className="mode-nav" aria-label="Game modes">
+          <a href="/engine/index.html">Solo garden</a>
+          <a href="/multiplayer/">Play together</a>
+        </nav>
       </header>
       <section className="game-layout" aria-labelledby="game-title">
         <div className="intro">

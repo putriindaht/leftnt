@@ -4,6 +4,10 @@ This module provides terminal, HTTP, and Ebitengine executables with shared
 maze domain code.
 Run the commands below from this directory.
 
+Explorer/Navigator WebSocket rooms are included in the API. See
+[multiplayer](../docs/multiplayer.md) for sessions and protocol, and
+[Docker](../docs/docker.md) to run the full browser game at one address.
+
 ## Terminal game
 
 ```sh

@@ -1,5 +1,10 @@
 # LEFTN'T browser client
 
+Explorer + Navigator multiplayer is at `/multiplayer/`, using Ebitengine Wasm.
+Build assets with `../scripts/build-engine.sh`, or run
+`docker compose up --build -d` from the repository root. See
+[multiplayer](../docs/multiplayer.md) and [Docker](../docs/docker.md).
+
 A Next.js App Router client written in TypeScript. It renders the Go game state
 and sends movement requests; collision and win rules remain in the Go domain.
 

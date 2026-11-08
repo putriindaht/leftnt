@@ -9,7 +9,18 @@ The current implementation is a single-player game playable in the terminal,
 a Next.js browser client backed by a Go HTTP API, or an Ebitengine pixel-art
 renderer. The Ebitengine solo mode has animated walking, a lost friend to find,
 and lantern pickups that temporarily expand visibility. The terminal and Next.js
-client show the full maze. Multiplayer and a round time limit are planned.
+client show the full maze. Explorer + Navigator multiplayer uses WebSockets
+and the Ebitengine browser game. A round time limit is planned.
+
+## Play together with Docker
+
+```sh
+docker compose up --build -d
+```
+
+Open `http://localhost:8080/multiplayer/`. Create an Explorer room and join its
+code from a second tab as Navigator. See [multiplayer](docs/multiplayer.md) and
+[Docker](docs/docker.md) for setup, controls, sessions, and deployment preparation.
 
 ## Current features
 
@@ -19,6 +30,9 @@ client show the full maze. Multiplayer and a round time limit are planned.
 - A win message when the player reaches the goal.
 - Create, read, and move API endpoints plus a JSON health endpoint.
 - Automated tests for movement, generation, distances, and goal selection.
+- Explorer/Navigator rooms, server-filtered views, direction hints, and reconnect.
+- Opt-in two-player browser voice chat with WebRTC, mute, and leave controls.
+- A Docker image serving the browser game, HTTP API, and WebSocket.
 
 ## Requirements
 

@@ -4,10 +4,12 @@ import (
 	"image/color"
 	"log"
 	"math"
+	"os"
 	"time"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
+	roomclient "github.com/putriindaht/leftnt/server/internal/client"
 	"github.com/putriindaht/leftnt/server/internal/domain"
 )
 
@@ -19,6 +21,7 @@ const (
 )
 
 type Game struct {
+	multiplayer      *multiplayerState
 	state            *domain.SoloGame
 	dirtTile         *ebiten.Image
 	woodTile         *ebiten.Image
@@ -37,6 +40,9 @@ type Game struct {
 }
 
 func (g *Game) Update() error {
+	if g.multiplayer != nil {
+		return g.updateMultiplayer()
+	}
 	g.feedback.advance()
 	g.restartHovered = g.restartButtonHovered()
 	if g.restartRequested() {
@@ -114,10 +120,17 @@ func (g *Game) startMove(direction string) error {
 }
 
 func (g *Game) friendFound() bool {
+	if g.multiplayer != nil {
+		return g.multiplayer.view != nil && g.multiplayer.view.Phase == "won" && !g.walk.moving()
+	}
 	return g.state.Status == domain.GameStatusWon && !g.walk.moving()
 }
 
 func (g *Game) Draw(screen *ebiten.Image) {
+	if g.multiplayer != nil {
+		g.drawMultiplayer(screen)
+		return
+	}
 	renderX, renderY := g.walk.position()
 	found := g.friendFound()
 	radius := g.state.VisionRadius()
@@ -203,30 +216,45 @@ func drawSprite(screen, sprite *ebiten.Image, x, y float64) {
 }
 
 func (g *Game) Layout(outsideWidth, outsideHeight int) (int, int) {
+	if g.multiplayer != nil {
+		return mazeWidth * tileSize, mazeHeight*tileSize + multiplayerHUDHeight
+	}
 	return mazeWidth * tileSize, mazeHeight*tileSize + hudHeight
 }
 
 func main() {
-	state, err := domain.NewSoloGame(mazeWidth, mazeHeight, domain.DefaultSoloConfig())
-	if err != nil {
-		log.Fatal(err)
-	}
-
 	game := &Game{
-		state:         state,
 		dirtTile:      newDirtTile(),
 		woodTile:      newWoodTile(),
 		hedgeTile:     newHedgeTile(),
 		useHedge:      true,
 		playerSprites: newPlayerSprites(),
-		walk:          newWalkAnimation(state.Player.Position),
 		lanternSprite: newLanternSprite(),
 		friendSprite:  newFriendSprite(),
+	}
+	height := mazeHeight*tileSize + hudHeight
+	if endpoint := os.Getenv("LEFTNT_WS_URL"); endpoint != "" {
+		token := os.Getenv("LEFTNT_ROOM_TOKEN")
+		if token == "" {
+			log.Fatal("LEFTNT_ROOM_TOKEN is required for multiplayer")
+		}
+		network := roomclient.NewRoomClient(endpoint, token)
+		defer network.Close()
+		game.multiplayer = &multiplayerState{client: network}
+		game.walk = newWalkAnimation(domain.Position{X: 1, Y: 1})
+		height = mazeHeight*tileSize + multiplayerHUDHeight
+	} else {
+		state, err := domain.NewSoloGame(mazeWidth, mazeHeight, domain.DefaultSoloConfig())
+		if err != nil {
+			log.Fatal(err)
+		}
+		game.state = state
+		game.walk = newWalkAnimation(state.Player.Position)
 	}
 
 	ebiten.SetWindowSize(
 		mazeWidth*tileSize*windowScale,
-		(mazeHeight*tileSize+hudHeight)*windowScale,
+		height*windowScale,
 	)
 	ebiten.SetWindowTitle("LEFTN'T - Ebitengine")
 

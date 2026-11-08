@@ -1,5 +1,6 @@
 # Local roadmap and learning notes
 /.local/
+/.env
 
 # Local machine files
 .DS_Store
@@ -16,3 +17,5 @@
 /client/next-env.d.ts
 /client/.env*
 !/client/.env.example
+/client/public/engine/game.wasm
+/client/public/engine/wasm_exec.js
